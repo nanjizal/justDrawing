@@ -1,4 +1,25 @@
 package justDrawing;
+
+#if format
+
+#elseif flambe
+
+#elseif (flash || openfl || nme)
+
+#elseif luxe
+import luxe.*;
+import phoenix.*;
+import phoenix.geometry.*;
+import phoenix.Batcher;
+#elseif svg
+
+#elseif js
+
+#elseif java
+
+#end
+
+
 #if format
 typedef TargetCanvas = hxPixels.Pixels;
 #elseif flambe
@@ -7,6 +28,7 @@ typedef TargetCanvas = flambe.Entity;
 typedef TargetCanvas = flash.display.Graphics;
 #elseif luxe
 typedef TargetCanvas = Array<phoenix.geometry.Geometry>;
+typedef PVertex = phoenix.geometry.Vertex;
 #elseif svg
 typedef TargetCanvas = js.html.svg.SVGElement;
 #elseif js
@@ -15,7 +37,7 @@ typedef TargetCanvas = js.html.CanvasRenderingContext2D;
 typedef TargetCanvas = justDrawing.SurfaceJPanel;
 #end
 
-// WIP not yet added imports or tried compile
+// Tested against Luxe more thought required on arbitary shapes.
 class Surface {
     var prevX:      Float = 0;
     var prevY:      Float = 0;
@@ -34,16 +56,23 @@ class Surface {
     public inline static var totalSegments: Int = 45;
     #end
     
-    #if ( svg || js )
+    // luxe must be before js and svg
+    #if luxe
+    public static inline function getColor( color: Int, alpha: Float ): luxe.Color {
+        var color = new Color().rgb( color );
+        color.a = alpha;
+        return color;
+    }
+    #elseif (svg || js)
     public inline static function getColor( col: Int, ?alpha:Float ): String {
         var str: String;
         if( alpha != null && alpha != 1.0 ){
             var r = (col >> 16) & 0xFF;
             var g = (col >> 8) & 0xFF;
             var b = (col) & 0xFF;
-            str 'rgba($r,$g,$b,$alpha)';
+            str ='rgba($r,$g,$b,$alpha)';
         } else {
-            str '#' + StringTools.hex( col, 6 );
+            str ='#' + StringTools.hex( col, 6 );
         }
         return str;
     }
@@ -51,12 +80,6 @@ class Surface {
     public inline static function getColor( col: Int, ?alpha: Float ): new java.awt.Color {
         var a:Int = Std.int( alpha * 255 );
         return new java.awt.Color( color | (a << 24), true);
-    }
-    #elseif luxe
-    public static inline function getColor( color: Int, alpha: Float ): luxe.Color {
-        var color = new Color().rgb(color);
-        color.a = alpha;
-        return color;
     }
     #end
     
@@ -139,7 +162,7 @@ class Surface {
                                 ,   graphics.bounds.width, graphics.bounds.height );
         #end
     }
-    public function lineStyle(  thick: Float, color: Int, ?alpha: Float = 1 ): Void {
+    public function lineStyle(  thick: Float, color: Int, ?alpha: Float = 1. ): Void {
         thickness = thick;
         lineColor = color;
         lineAlpha = alpha;
@@ -275,7 +298,7 @@ class Surface {
             graphics.draw( path );
         #end
         
-        prevX = x
+        prevX = x;
         prevY = y;
     }
     public function quadTo( cx: Float, cy: Float, ax: Float, ay: Float ): Void {
@@ -307,7 +330,7 @@ class Surface {
         #elseif (flash || openfl || nme)
             graphics.curveTo(cx, cy, ax, ay);
         #elseif luxe
-            var p0 = { x: _prevX, y: _prevY };
+            var p0 = { x: prevX, y: prevY };
             var p1 = { x: cx, y: cy };
             var p2 = { x: ax, y: ay }
             var approxDistance = distance( p0, p1 ) + distance( p1, p2 );
@@ -426,11 +449,20 @@ class Surface {
         #elseif (flash || openfl || nme)
             graphics.drawRect(x, y, width, height);
         #elseif luxe
-            if (_inFillingMode){
-                var geom = Luxe.draw.box({ x: x, y: y, w: width, h: height,
+            if( inFill ){
+                var geom;
+                if( lineAlpha != 0. ){
+                    geom = Luxe.draw.box({ x: x+1., y: y+1., w: width-2., h: height-2.,
                         color: getColor( fillColor, fillAlpha )
                     });
-                graphics.push(geom);
+                    geom.depth = -1;
+                } else {
+                    geom = Luxe.draw.box({ x: x, y: y, w: width, h: height,
+                        color: getColor( fillColor, fillAlpha )
+                    });
+                    geom.depth = -1;
+                }
+                graphics[ graphics.length ] = geom;
             }
             var geom = Luxe.draw.rectangle({ x: x, y: y, w: width, h: height,
                         color: getColor( lineColor, lineAlpha )
@@ -502,7 +534,7 @@ class Surface {
             }
         #elseif luxe
             var shape = new Geometry({
-                            primitive_type: PrimitiveType.triangles,
+                            primitive_type: phoenix.PrimitiveType.triangles,
                             batcher: Luxe.renderer.batcher
                         });
             var i = 0;
@@ -517,6 +549,7 @@ class Surface {
                 shape.add( vertexConverter( { x: points[ i ], y: points[ i + 1 ] }, col ) );
                 i+=2;
             }
+            lineTo( points[ 0 ], points[ 1 ] );
         #elseif svg
             var aTri: SVGElement = cast Browser.document.createElementNS( svgNameSpace, 'polygon');
             var points = '';
