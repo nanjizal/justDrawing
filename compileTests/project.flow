@@ -1,0 +1,33 @@
+{
+	luxe:{
+		window: {
+			width:800,
+			height:600,
+			title:'testJustDrawing',
+			fullscreen:false,
+			resizable:true,
+			borderless:false
+		}
+	},
+
+	project : {
+		name : 'testJustDrawing',
+		version : '0.0.0',
+		author : 'Nanjizal',
+		app : {
+			main: 'testjustDrawing.MainLuxe',
+			name:'testJustDrawing',
+			output: '../binLuxe',
+			codepaths: '../src',
+			package : 'net.nanjizal.justDrawing'
+		},
+		build : {
+			dependencies : {
+				luxe : '*',
+				hxPixels: '*'
+			}
+		},
+		files : {
+		}
+	}
+}
