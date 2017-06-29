@@ -476,11 +476,16 @@ class Surface {
             rect.plot( lineColor, lineAlpha, thickness );
             pixelShapes[ pixelShapes.length ] = ERectangle( rect );
         #elseif flambe
-            var shape = new flambe.display.FillSprite( fillColor, width, height)
-                            .setXY( x, y )
-                            .setAlpha( fillAlpha );
-            shape.pixelSnapping = false;
-            graphics.addChild(new flambe.Entity().add(shape));
+            var tempX = prevX;
+            var tempY = prevY;
+            drawRectFill( x, y, width, height );
+            moveTo( x, y );
+            lineTo( x + width, y );
+            lineTo( x + width, y + width );
+            lineTo( x, y + width );
+            lineTo( x, y );
+            prevX = tempX;
+            prevY = tempY;
         #elseif (flash || openfl || nme)
             graphics.drawRect(x, y, width, height);
         #elseif luxe
