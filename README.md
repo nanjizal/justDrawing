@@ -1,6 +1,13 @@
 # justDrawing
 Simple very basic drawing api for cross toolkits, WIP, experimental.
 
+### Example use
+```haxe
+surface.beginFill( 0xff0000, 1. );
+surface.lineStyle( 2., 0x0000ff, 1. );
+surface.drawCircle( 100, 100, 30 );
+surface.endFill();
+```
 ## Luxe
 [luxe demo](https://rawgit.com/nanjizal/justDrawing/master/binLuxe/web/index.html)
 
