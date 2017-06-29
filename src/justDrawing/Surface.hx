@@ -381,6 +381,38 @@ class Surface {
             graphics.draw( path );
         #end
     }
+    #if flambe
+    inline function drawElipseStrip( x: Float,       y: Float
+                                        ,   width: Float,   height: Float, ?horizontal: Bool = true ){
+        if( !inFill ) return;
+        var tot: Int;
+        var delta: Float;
+        var rx0     = width/2;
+        var ry0     = height/2;
+        var cx0     = x + rx0;
+        var cy0     = y + ry0;
+        if( horizontal ) {
+            tot = Std.int( Math.floor( height) );
+            for( i in 0...tot ){
+                delta = Math.pow( Math.pow( rx0, 2 )*( 1 - Math.pow( i - ry0 , 2 )/Math.pow( ry0, 2 ) ), 0.5 );
+                drawRectFill( cx0 - delta, y + i, 2*delta, 1 );
+            }
+        } else {
+            tot = Std.int( Math.floor( width ) );
+            for( i in 0...tot ){
+                delta = Math.pow( Math.pow( ry0, 2 )*( 1 - Math.pow( i - rx0 , 2 )/Math.pow( rx0, 2 ) ), 0.5 );
+                drawRectFill( x - i, cy0 - delta, 1, 2*delta );
+            }
+        }
+    }
+    inline function drawRectFill( x: Float, y: Float, width: Float, height: Float ){
+        var shape = new flambe.display.FillSprite( fillColor, width, height )
+                        .setXY( x, y )
+                        .setAlpha( fillAlpha );
+        shape.pixelSnapping = false;
+        graphics.addChild(new flambe.Entity().add(shape));
+    }
+    #end
     public function drawCircle( cx: Float, cy: Float, radius: Float ): Void {
         #if pixel
             var circle = new PixelCircle( graphics, cx, cy, r );
@@ -388,6 +420,7 @@ class Surface {
             circle.plot( lineColor, lineAlpha, thickness );
             pixelShapes[ pixelShapes.length ] = ECircle( circle );
         #elseif flambe
+            drawElipseStrip( cx - radius, cy - radius, radius * 2, radius * 2 );
             var startX:Float = cx;
             var startY:Float = cy;
             for (i in 0 ... totalSegments + 1){
@@ -515,6 +548,10 @@ class Surface {
             aTri.plot( lineColor, lineAlpha, thickness );
             pixelShapes[ pixelShapes.length ] =  ETriangle( aTri );
         #elseif flambe
+            var tri = new TriangleShape(  points[0], points[1]
+                                        , points[2], points[3] 
+                                        , points[4], points[5] );
+            tri.drawStrips( drawRectFill );
             var i = 0;
             while( i < points.length ){
                 if( i == 0 ){
@@ -524,6 +561,7 @@ class Surface {
                 }
                 i+=2;
             }
+            lineTo( points[ 0 ], points[ 1 ] );
         #elseif (flash || openfl || nme)
             var i = 0;
             while( i < points.length ){
