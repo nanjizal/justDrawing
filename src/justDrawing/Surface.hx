@@ -1,6 +1,6 @@
 package justDrawing;
 
-#if format
+#if pixel
 
 #elseif flambe
 
@@ -20,7 +20,7 @@ import phoenix.Batcher;
 #end
 
 
-#if format
+#if pixel
 typedef TargetCanvas = hxPixels.Pixels;
 #elseif flambe
 typedef TargetCanvas = flambe.Entity;
@@ -102,8 +102,8 @@ class Surface {
     }
     #end
     
-    #if format
-    var pixelShapes: Array<PixelShapeEnum>();
+    #if pixel
+    //var pixelShapes: Array<PixelShapeEnum>();
     #elseif flambe
         //
     #elseif (flash || openfl || nme)
@@ -124,7 +124,7 @@ class Surface {
         graphics = graphics_;
         inFill   = false;
         
-        #if format
+        #if pixel
             pixelShapes = new Array<PixelShapeEnum>();
         #elseif flambe
             //
@@ -141,7 +141,7 @@ class Surface {
         #end
     }
     public function clear(): Void {
-        #if format
+        #if pixel
             var geom;
             while ((geom = pixelShapes.pop()) != null) {}
         #elseif flambe
@@ -167,7 +167,7 @@ class Surface {
         lineColor = color;
         lineAlpha = alpha;
         
-        #if format
+        #if pixel
             //
         #elseif flambe
             //
@@ -190,7 +190,7 @@ class Surface {
         fillAlpha = alpha;
         inFill = true;
         
-        #if format
+        #if pixel
             //
         #elseif flambe
             //
@@ -210,7 +210,7 @@ class Surface {
     public function endFill(): Void {
         inFill = false;
         
-        #if format
+        #if pixel
             //
         #elseif flambe
             //
@@ -232,7 +232,7 @@ class Surface {
         prevX = x;
         prevY = y;
         
-        #if format
+        #if pixel
             //
         #elseif flambe
             //
@@ -251,7 +251,7 @@ class Surface {
         #end
     }
     public function lineTo( x: Float, y: Float ): Void {
-        #if format
+        #if pixel
             var aLine = new PixelLine( graphics, prevX, prevY, x, y, w );
         	aLine.plot( lineColor, lineAlpha );
             pixelShapes[ pixelShapes.length ] = ELine( aLine );
@@ -260,13 +260,15 @@ class Surface {
             var dy = prevY - y;
             var distance = Math.sqrt( dx * dx + dy * dy );
             var angle = Math.atan2( dy, dx );
-            var shape: Sprite = new FillSprite( lineColor, distance, thickness)
-                                .setRotation(FMath.toDegrees( angl e))
+            var degrees = flambe.math.FMath.toDegrees( angle);
+            var shape: flambe.display.Sprite = new flambe.display.FillSprite( 
+                                lineColor, distance, thickness)
+                                .setRotation( degrees )
                                 .setXY( x, y )
                                 .setAnchor( 0, thickness / 2 )
                                 .setAlpha( lineAlpha );
             shape.pixelSnapping = false;
-            graphics.addChild( new Entity().add( shape ) );
+            graphics.addChild( new flambe.Entity().add( shape ) );
         #elseif (flash || openfl || nme)
             graphics.lineTo(x, y);
         #elseif luxe
@@ -302,7 +304,7 @@ class Surface {
         prevY = y;
     }
     public function quadTo( cx: Float, cy: Float, ax: Float, ay: Float ): Void {
-        #if format
+        #if pixel
             var quadratic = new PixelQuadratic( graphics, prevX, prevY, ax, ay, ex, ey, thickness );
             quadratic.plot( lineColor, lineAlpha );
             pixelShapes[ pixelShapes.length ] = EQuadratic( quadratic );
@@ -380,7 +382,7 @@ class Surface {
         #end
     }
     public function drawCircle( cx: Float, cy: Float, radius: Float ): Void {
-        #if format
+        #if pixel
             var circle = new PixelCircle( graphics, cx, cy, r );
             if( inFill ) circle.fill( fillColor, fillAlpha );
             circle.plot( lineColor, lineAlpha, thickness );
@@ -435,17 +437,17 @@ class Surface {
         #end
     }
     public function drawRect( x: Float, y: Float, width: Float, height: Float ): Void {
-        #if format
+        #if pixel
             var rect = new PixelRectangle( graphics, x, y, width, height );
             if( inFill ) rect.fill( fillColor, fillAlpha );
             rect.plot( lineColor, lineAlpha, thickness );
             pixelShapes[ pixelShapes.length ] = ERectangle( rect );
         #elseif flambe
-            var shape = new FillSprite(_color, width, height)
-                            .setXY(x, y)
-                            .setAlpha(_alpha);
+            var shape = new flambe.display.FillSprite( fillColor, width, height)
+                            .setXY( x, y )
+                            .setAlpha( fillAlpha );
             shape.pixelSnapping = false;
-            graphics.addChild(new Entity().add(shape));
+            graphics.addChild(new flambe.Entity().add(shape));
         #elseif (flash || openfl || nme)
             graphics.drawRect(x, y, width, height);
         #elseif luxe
@@ -507,7 +509,7 @@ class Surface {
         drawTri( points );
     }
     public function drawTri( points: Array<Float> ): Void {
-        #if format
+        #if pixel
             var aTri = new PixelTriangle( graphics, pointsArr );
             if( inFill  ) aTri.fill( fillColor, fillAlpha );
             aTri.plot( lineColor, lineAlpha, thickness );
