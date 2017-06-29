@@ -1,7 +1,7 @@
 # justDrawing
 
 ## Luxe
-
+[luxe demo](https://rawgit.com/nanjizal/justDrawing/master/binLuxe/web/index.html)
 
 ## Flambe 
 Flambe does not seem to have triangle render support so results are disappointing.
