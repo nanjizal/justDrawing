@@ -1,0 +1,4 @@
+-cmd cd ../binFlambe
+-cmd flambe run html
+--next
+-cmd flambe serve

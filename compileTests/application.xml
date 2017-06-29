@@ -3,7 +3,7 @@
 	<!-- NMML reference: https://gist.github.com/1763850 -->
 	
 	<!-- metadata, make sure 'package' is at least 3 segments (ie. com.mycompany.myproject) -->
-	<meta title="MainNME" package="net.nanjizal.justDRawing" version="1.0.0" company="Nanjizal" />
+	<meta title="MainNME" package="net.nanjizal.justDrawing" version="1.0.0" company="Nanjizal" />
 
 	<!-- output -->
 	<app main="testjustDrawing.MainFlash" path="../binNme" file="MainFlash" />
