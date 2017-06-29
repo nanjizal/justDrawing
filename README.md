@@ -1,5 +1,6 @@
 # justDrawing
 Simple very basic drawing api for cross toolkits, WIP, experimental.
+Rework of https://github.com/hxDaedalus/hxDaedalus/tree/master/src/wings
 
 ### Example use
 ```haxe
