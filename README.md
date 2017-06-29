@@ -1,4 +1,5 @@
 # justDrawing
+Simple very basic drawing api for cross toolkits.
 
 ## Luxe
 [luxe demo](https://rawgit.com/nanjizal/justDrawing/master/binLuxe/web/index.html)
