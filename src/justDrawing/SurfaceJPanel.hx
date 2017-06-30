@@ -11,9 +11,9 @@ class SurfaceJPanel extends JPanel
     public var paintFunction: Graphics2D -> Void;
     public function new(){ super( true ); }
 
-    @:overload override public function paintComponent( g: Graphics ){
-        super.paintComponent( g );
-        var g2D: Graphics2D = cast g;
+    @:overload override public function paintComponent( g2: Graphics ){
+        super.paintComponent( g2 );
+        var g2D: Graphics2D = cast g2;
         var rHint = RenderingHints;
         g2D.setRenderingHint( rHint.KEY_ANTIALIASING, rHint.VALUE_ANTIALIAS_ON );
         g2D.setRenderingHint( rHint.KEY_RENDERING, rHint.VALUE_RENDER_QUALITY );

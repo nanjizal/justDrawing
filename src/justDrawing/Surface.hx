@@ -16,7 +16,8 @@ import phoenix.Batcher;
 #elseif js
 
 #elseif java
-
+import java.awt.Graphics2D;
+import java.awt.geom.GeneralPath;
 #end
 
 
@@ -77,9 +78,9 @@ class Surface {
         return str;
     }
     #elseif java
-    public inline static function getColor( col: Int, ?alpha: Float ): new java.awt.Color {
+    public inline static function getColor( col: Int, ?alpha: Float ): java.awt.Color {
         var a:Int = Std.int( alpha * 255 );
-        return new java.awt.Color( color | (a << 24), true);
+        return new java.awt.Color( col | (a << 24), true);
     }
     #end
     
@@ -111,17 +112,20 @@ class Surface {
     #elseif luxe
         //
     #elseif svg
-    var svgShapes: new Array<SVGElement>();
+    var svgShapes: Array<SVGElement>;
     #elseif js
         //
     #elseif java
-    var path: GeneralPath();
+    var path: GeneralPath;
+    // must set before calling methods
+    public var graphics2D: Graphics2D;
     #end
     
     
     
     public function new( graphics_: TargetCanvas ){
         graphics = graphics_;
+        
         inFill   = false;
         
         #if pixel
@@ -158,8 +162,8 @@ class Surface {
         #elseif js
             graphics.clearRect( 0, 0, width, height );
         #elseif java
-            graphics.clearRect(     graphics.bounds.x, graphics.bounds.y
-                                ,   graphics.bounds.width, graphics.bounds.height );
+            var bounds = graphics.getBounds();
+            graphics2D.clearRect( bounds.x, bounds.y, bounds.width, bounds.height );
         #end
     }
     public function lineStyle(  thick: Float, color: Int, ?alpha: Float = 1. ): Void {
@@ -178,11 +182,11 @@ class Surface {
         #elseif svg
             //
         #elseif js
-            surface.lineWidth = thick;
-            surface.strokeStyle = getColor( lineColor, lineAlpha );
+            graphics.lineWidth = thick;
+            graphics.strokeStyle = getColor( lineColor, lineAlpha );
         #elseif java
-        	graphics.setColor( getColor( lineColor, lineAlpha ) );
-            graphics.setStroke( new java.awt.BasicStroke( thickness ) );
+            graphics2D.setStroke( new java.awt.BasicStroke( thickness ) );
+            graphics2D.setColor( getColor( lineColor, lineAlpha ) );
         #end
     }
     public function beginFill( color: Int, ?alpha: Float ): Void {
@@ -202,12 +206,13 @@ class Surface {
             // 
         #elseif js
             graphics.fillStyle = getColor( fillColor, fillAlpha );
-            graphics.beiginPath();
+            graphics.beginPath();
         #elseif java
-            graphics.setPaint( getColor( fillColor, fillAlpha ) );
+        
         #end
     }
     public function endFill(): Void {
+        var wasFill = inFill;
         inFill = false;
         
         #if pixel
@@ -225,7 +230,13 @@ class Surface {
             graphics.closePath();
             graphics.fill();
         #elseif java
-            //
+            path.closePath();
+            if( wasFill ){
+                graphics2D.setColor( getColor( fillColor, fillAlpha ) );
+                graphics2D.fill( path );
+                graphics2D.setColor( getColor( lineColor, lineAlpha ) );
+                graphics2D.draw( path );
+            }
         #end
     }
     public function moveTo( x: Float, y: Float ): Void {
@@ -297,7 +308,7 @@ class Surface {
             graphics.stroke();
         #elseif java
             path.lineTo( x, y );
-            graphics.draw( path );
+            graphics2D.draw( path );
         #end
         
         prevX = x;
@@ -378,7 +389,7 @@ class Surface {
             graphics.stroke();
         #elseif java
             path.quadTo(cx, cy, ax, ay);
-            graphics.draw( path );
+            graphics2D.draw( path );
         #end
     }
     #if flambe
@@ -457,16 +468,19 @@ class Surface {
             svgElement.appendChild( node );
             svgShapes.push( element );
         #elseif js
-            surface.beginPath();
-            surface.arc( cx, cy, radius, 0, 2*Math.PI, false );
-            surface.stroke();
-            surface.closePath();
+            graphics.beginPath();
+            graphics.arc( cx, cy, radius, 0, 2*Math.PI, false );
+            graphics.stroke();
+            graphics.closePath();
         #elseif java
             var r = Std.int( radius * 2 );
             var x = Std.int( cx - radius );
             var y = Std.int( cy - radius );
-            graphics.fillOval( x, y, r, r );
-            graphics.drawOval( x, y, r, r );
+            graphics2D.setColor( getColor( fillColor, fillAlpha ) );
+            graphics2D.fillOval( x, y, r, r );
+            graphics2D.setColor( getColor( lineColor, lineAlpha ) );
+            graphics2D.drawOval( x, y, r, r );
+            moveTo( Std.int(x), Std.int(y) );
         #end
     }
     public function drawRect( x: Float, y: Float, width: Float, height: Float ): Void {
@@ -529,8 +543,11 @@ class Surface {
             graphics.stroke();
             graphics.closePath();
         #elseif java
-            graphics.fillRect( Std.int(x), Std.int(y), Std.int(width), Std.int(height) );
-            graphics.drawRect( Std.int(x), Std.int(y), Std.int(width), Std.int(height) );
+            graphics2D.setColor( getColor( fillColor, fillAlpha ) );
+            graphics2D.fillRect( Std.int(x), Std.int(y), Std.int(width), Std.int(height) );
+            graphics2D.setColor( getColor( lineColor, lineAlpha ) );
+            graphics2D.drawRect( Std.int(x), Std.int(y), Std.int(width), Std.int(height) );
+            moveTo( Std.int(x), Std.int(y) );
         #end
     }
     public function drawEquilaterialTri( x: Float, y: Float, radius: Float, direction: Float ): Void{
@@ -577,6 +594,7 @@ class Surface {
                 }
                 i += 2;
             }
+            graphics.lineTo( points[ 0 ], points[ 1 ] );
         #elseif luxe
             var shape = new Geometry({
                             primitive_type: phoenix.PrimitiveType.triangles,
@@ -623,6 +641,7 @@ class Surface {
                 }
                     i+=2;
                 }
+            //graphics.lineTo( points[ 0 ], points[ 1 ] );
             graphics.stroke();
             graphics.closePath();
         #elseif java
@@ -635,7 +654,7 @@ class Surface {
                 }
                 i+=2;
             }
-            graphics.draw( path );
+            path.lineTo( points[ 0 ], points[ 1 ] );
         #end
     }
     public static inline function arcTan( p0: { x: Float, y: Float }

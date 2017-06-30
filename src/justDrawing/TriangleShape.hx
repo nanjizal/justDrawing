@@ -77,13 +77,6 @@ class TriangleShape {
         var planeCA = ( cx - px )*( ay - py ) - ( ax - px )*( cy - py );
         return sign( planeAB ) == sign( planeBC ) && sign( planeBC ) == sign( planeCA );
     }
-    // no bounds checking
-    public inline function liteHit( px: Float, py: Float ): Bool {
-        var planeAB = ( ax - px )*( by - py ) - ( bx - px )*( ay - py );
-        var planeBC = ( bx - px )*( cy - py ) - ( cx - px )*( by - py );
-        var planeCA = ( cx - px )*( ay - py ) - ( ax - px )*( cy - py );
-        return sign( planeAB ) == sign( planeBC ) && sign( planeBC ) == sign( planeCA );
-    }
     inline function sign( n: Float ): Int {
         return Std.int( Math.abs( n )/n );
     }
@@ -121,6 +114,13 @@ class TriangleShape {
             }
         }
         return rect;
+    }
+    // no bounds checking
+    public inline function liteHit( px: Float, py: Float ): Bool {
+        var planeAB = ( ax - px )*( by - py ) - ( bx - px )*( ay - py );
+        var planeBC = ( bx - px )*( cy - py ) - ( cx - px )*( by - py );
+        var planeCA = ( cx - px )*( ay - py ) - ( ax - px )*( cy - py );
+        return sign( planeAB ) == sign( planeBC ) && sign( planeBC ) == sign( planeCA );
     }
     // draws Triangle with horizontal strips 1px high.
     public function drawStrips( drawRect: Float->Float->Float->Float->Void ){
