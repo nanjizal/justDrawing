@@ -24,13 +24,13 @@ works need to look at openfl for web demo?
 [javascript canvas demo](https://rawgit.com/nanjizal/justDrawing/master/binCanvas/index.html)
 
 # SVG
-No Main class yet
+No Main class yet untested.
 
 # Swing
-No Main class yet
+[Java Swing you can download jar](https://github.com/nanjizal/justDrawing/blob/master/binSwing/MainSwing-Debug.jar)
 
 # Pixels
-No Main class yet
+No Main class yet untested.
 
-# Kha & Heaps
+### Kha & Heaps
 No plans ?
