@@ -1,0 +1,8 @@
+-cp ../src
+-main testjustDrawing.MainSwing
+-java ../binSwing
+-D fdb
+ -debug
+-cmd cd ../binSwing/src/
+-cmd cd ../
+-cmd java -jar *.jar
