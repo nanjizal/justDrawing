@@ -13,8 +13,7 @@ surface.endFill();
 [luxe demo](https://rawgit.com/nanjizal/justDrawing/master/binLuxe/web/index.html)
 
 ## Flambe 
-Flambe does not seem to have triangle render support so results are disappointing.
-Gave up on flash build it seems to rely on hxsl which in depreciated, the js build needs some files copied from flambe git for flambe to run since haxelib flambe is out of date.
+Triangle, Circle support via strips. Flash Flambe as a target seems broken, for js you will need to patch some files from flambe git to haxelib. Target limited.
 
 [flambe demo](https://rawgit.com/nanjizal/justDrawing/master/binFlambe/build/web/index.html)
 
@@ -22,7 +21,7 @@ Gave up on flash build it seems to rely on hxsl which in depreciated, the js bui
 works need to look at openfl for web demo?
 
 # Canvas
-No Main class yet
+[javascript canvas demo](https://rawgit.com/nanjizal/justDrawing/master/binCanvas/index.html)
 
 # SVG
 No Main class yet
