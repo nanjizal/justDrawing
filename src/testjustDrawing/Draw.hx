@@ -3,7 +3,6 @@ import justDrawing.Surface;
 import testjustDrawing.Draw;
 using testjustDrawing.Draw;
 class Draw {
-    // not working
     public static function testing( surface: Surface ){
         surface.whiteBackground();
         surface.redCircleBlueOutline();
