@@ -17,8 +17,8 @@ Triangle, Circle support via strips. Flash Flambe as a target seems broken, for 
 
 [flambe demo](https://rawgit.com/nanjizal/justDrawing/master/binFlambe/build/web/index.html)
 
-## NME
-works need to look at openfl for web demo?
+## NME / OpenFL
+[openfl web demo](https://rawgit.com/nanjizal/justDrawing/master/binOpenFL/Exports/html5/release/bin/index.html)
 
 # Canvas
 [javascript canvas demo](https://rawgit.com/nanjizal/justDrawing/master/binCanvas/index.html)
