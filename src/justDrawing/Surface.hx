@@ -1,7 +1,7 @@
 package justDrawing;
 
 #if pixel
-
+import pixelDrawing.*;
 #elseif flambe
 
 #elseif (flash || openfl || nme)
@@ -107,7 +107,7 @@ class Surface {
     #end
     
     #if pixel
-    //var pixelShapes: Array<PixelShapeEnum>();
+    var pixelShapes: Array<ShapeEnum>  ;
     #elseif flambe
         //
     #elseif (flash || openfl || nme)
@@ -132,7 +132,7 @@ class Surface {
         inFill   = false;
         
         #if pixel
-            pixelShapes = new Array<PixelShapeEnum>();
+            pixelShapes = new Array<ShapeEnum>();
         #elseif flambe
             //
         #elseif (flash || openfl || nme)
@@ -266,7 +266,7 @@ class Surface {
     }
     public function lineTo( x: Float, y: Float ): Void {
         #if pixel
-            var aLine = new PixelLine( graphics, prevX, prevY, x, y, w );
+            var aLine = new Line( graphics, prevX, prevY, x, y, thickness );
         	aLine.plot( lineColor, lineAlpha );
             pixelShapes[ pixelShapes.length ] = ELine( aLine );
         #elseif flambe
@@ -319,9 +319,22 @@ class Surface {
     }
     public function quadTo( cx: Float, cy: Float, ax: Float, ay: Float ): Void {
         #if pixel
-            var quadratic = new PixelQuadratic( graphics, prevX, prevY, ax, ay, ex, ey, thickness );
+            var quadratic = new Quadratic( graphics, prevX, prevY, cx, cy, ax, ay, thickness );
             quadratic.plot( lineColor, lineAlpha );
             pixelShapes[ pixelShapes.length ] = EQuadratic( quadratic );
+            prevX = ax;
+            prevY = ay;
+            /*lineColor = 0xFF0000;
+            lineTo( ax, ay );
+            moveTo( ax, ay );
+            lineColor = 0x0000ff;*/
+            /*lineTo( prevX, prevY );
+            lineTo( cx, cy );
+            lineTo( ax, ay );*/
+            /*var aLine = new Line( graphics, prevX, prevY, ax, ay, thickness );
+        	aLine.plot( lineColor, lineAlpha );
+            pixelShapes[ pixelShapes.length ] = ELine( aLine );*/
+            
         #elseif flambe
             var p0 = { x: prevX, y: prevY };
             var p1 = { x: cx, y: cy };
@@ -429,7 +442,7 @@ class Surface {
     #end
     public function drawCircle( cx: Float, cy: Float, radius: Float ): Void {
         #if pixel
-            var circle = new PixelCircle( graphics, cx, cy, r );
+            var circle = new Circle( graphics, cx, cy, radius );
             if( inFill ) circle.fill( fillColor, fillAlpha );
             circle.plot( lineColor, lineAlpha, thickness );
             pixelShapes[ pixelShapes.length ] = ECircle( circle );
@@ -488,7 +501,7 @@ class Surface {
     }
     public function drawRect( x: Float, y: Float, width: Float, height: Float ): Void {
         #if pixel
-            var rect = new PixelRectangle( graphics, x, y, width, height );
+            var rect = new Rectangle( graphics, x, y, width, height );
             if( inFill ) rect.fill( fillColor, fillAlpha );
             rect.plot( lineColor, lineAlpha, thickness );
             pixelShapes[ pixelShapes.length ] = ERectangle( rect );
@@ -568,7 +581,7 @@ class Surface {
     }
     public function drawTri( points: Array<Float> ): Void {
         #if pixel
-            var aTri = new PixelTriangle( graphics, pointsArr );
+            var aTri = new Triangle( graphics, points );
             if( inFill  ) aTri.fill( fillColor, fillAlpha );
             aTri.plot( lineColor, lineAlpha, thickness );
             pixelShapes[ pixelShapes.length ] =  ETriangle( aTri );
