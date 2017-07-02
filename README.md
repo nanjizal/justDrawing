@@ -30,7 +30,7 @@ SVG implementation needs some tweaks it should be changed so that you can fill p
 ## Swing
 [Java Swing you can download jar](https://github.com/nanjizal/justDrawing/blob/master/binSwing/MainSwing-Debug.jar)
 
-# Pixels
+### Pixels
 No Main class yet untested.
 
 ### Kha & Heaps
