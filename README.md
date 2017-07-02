@@ -20,14 +20,14 @@ Triangle, Circle support via strips. Flash Flambe as a target seems broken, for 
 ## NME / OpenFL
 [openfl web demo](https://rawgit.com/nanjizal/justDrawing/master/binOpenFL/Exports/html5/release/bin/index.html)
 
-# Canvas
+## Canvas
 [javascript canvas demo](https://rawgit.com/nanjizal/justDrawing/master/binCanvas/index.html)
 
-# SVG
+## SVG
 SVG implementation needs some tweaks it should be changed so that you can fill path should not be hard to implement.
 [javascript SVG demo](https://rawgit.com/nanjizal/justDrawing/master/binSVG/index.html)
 
-# Swing
+## Swing
 [Java Swing you can download jar](https://github.com/nanjizal/justDrawing/blob/master/binSwing/MainSwing-Debug.jar)
 
 # Pixels
