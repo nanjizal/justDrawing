@@ -31,7 +31,8 @@ SVG implementation needs some tweaks it should be changed so that you can fill p
 [Java Swing you can download jar](https://github.com/nanjizal/justDrawing/blob/master/binSwing/MainSwing-Debug.jar)
 
 ### Pixels
-No Main class yet untested.
+Creates a png file:
+![](https://github.com/nanjizal/justDrawing/blob/master/binPixels/neko/out_shapes.png)
 
 ### Kha & Heaps
 No plans ?
