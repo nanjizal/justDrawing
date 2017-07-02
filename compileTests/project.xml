@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+	
+	<meta title="MainOpenFL" package="net.nanjizal.justDrawing" version="1.0.0" company="Nanjizal" />
+	<app main="testjustDrawing.MainFlash" path="../binOpenFL/Exports" file="MainFlash" />
+	<source path="../src/" />
+	<haxelib name="openfl" />
+	<assets path="../binOpenFL/Assets" rename="assets" exclude="openfl.svg" />
+	<icon path="../binOpenFL/Assets/openfl.svg" />
+</project>
