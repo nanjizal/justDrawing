@@ -1,0 +1,10 @@
+-lib format
+-lib hxPixels
+-cp ../src
+-main testjustDrawing.MainPixels
+-debug
+-x ../binPixels/neko/main
+-D pixel
+-D Sys
+--next
+-cmd open '../binPixels/neko/out_shapes.png'
