@@ -24,7 +24,8 @@ works need to look at openfl for web demo?
 [javascript canvas demo](https://rawgit.com/nanjizal/justDrawing/master/binCanvas/index.html)
 
 # SVG
-No Main class yet untested.
+SVG implementation needs some tweaks it should be changed so that you can fill path should not be hard to implement.
+[javascript SVG demo](https://rawgit.com/nanjizal/justDrawing/master/binSVG/index.html)
 
 # Swing
 [Java Swing you can download jar](https://github.com/nanjizal/justDrawing/blob/master/binSwing/MainSwing-Debug.jar)
