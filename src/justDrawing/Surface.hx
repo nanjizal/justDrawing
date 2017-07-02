@@ -12,7 +12,9 @@ import phoenix.*;
 import phoenix.geometry.*;
 import phoenix.Batcher;
 #elseif svg
-
+import js.html.svg.SVGElement;
+import js.html.Node;
+import js.Browser;
 #elseif js
 
 #elseif java
@@ -85,13 +87,14 @@ class Surface {
     #end
     
     #if svg
+    inline public static var svgNameSpace: String = "http://www.w3.org/2000/svg" ;
     public function repaint(){
         for( all in svgShapes ) {
             var node: Node = cast all;
-            svgElement.appendChild( node );
+            graphics.appendChild( node );
         }
     }
-    public function remove( element: SVGElement ): Void {
+    public function remove( element: js.html.svg.SVGElement ): Void {
         if ( !graphics.hasChildNodes() ) return;
         var node: Node = cast element;
         graphics.removeChild( element );
@@ -199,7 +202,7 @@ class Surface {
         #elseif flambe
             //
         #elseif (flash || openfl || nme)
-            graphics.beginFill(color, alpha);
+            graphics.beginFill(color, alpha); 
         #elseif luxe
             //
         #elseif svg
@@ -299,9 +302,9 @@ class Surface {
             aLine.setAttribute('y2', Std.string( y ) );
             aLine.setAttribute('stroke', getColor( lineColor, lineAlpha ) );
             aLine.setAttribute('stroke-width', Std.string( thickness ) );
-            var node: Node = cast element;
-            svgElement.appendChild( node );
-            svgShapes.push( element );
+            var node: Node = cast aLine;
+            graphics.appendChild( node );
+            svgShapes.push( aLine );
         #elseif js
             graphics.lineTo( x, y );
             graphics.closePath();
@@ -462,11 +465,11 @@ class Surface {
             svgCircle.setAttribute( "cy", Std.string( cy ) );
             svgCircle.setAttribute( "r", Std.string( radius ) );
             if( inFill ) svgCircle.setAttribute( "fill", getColor( fillColor, fillAlpha ) );
-            svgCircle.setAttribute('stroke', getColor( lineFill, lineAlpha ) );
+            svgCircle.setAttribute('stroke', getColor( lineColor, lineAlpha ) );
             svgCircle.setAttribute('stroke-width', Std.string( thickness ) );
-            var node: Node = cast element;
-            svgElement.appendChild( node );
-            svgShapes.push( element );
+            var node: Node = cast svgCircle;
+            graphics.appendChild( node );
+            svgShapes.push( svgCircle );
         #elseif js
             graphics.beginPath();
             graphics.arc( cx, cy, radius, 0, 2*Math.PI, false );
@@ -615,17 +618,17 @@ class Surface {
             lineTo( points[ 0 ], points[ 1 ] );
         #elseif svg
             var aTri: SVGElement = cast Browser.document.createElementNS( svgNameSpace, 'polygon');
-            var points = '';
+            var pointsStr = '';
             var x1: Float;
             var y1: Float;
             var i: Int = 0;
-            while( i < pointsArr.length ){
-                points += Std.string( pointsArr[i] ) + ',' + Std.string( pointsArr[i+1] ) + ' ';
+            while( i < points.length ){
+                pointsStr += Std.string( points[i] ) + ',' + Std.string( points[i+1] ) + ' ';
                 i+=2;
             }
-            aTri.setAttribute('points', points );
-            if( inFill  ) aTri.setAttribute( "fill", getColor( fill, fillAlpha ) );
-            aTri.setAttribute('stroke', getColor( line, lineAlpha ) );
+            aTri.setAttribute('points', pointsStr );
+            if( inFill  ) aTri.setAttribute( "fill", getColor( fillColor, fillAlpha ) );
+            aTri.setAttribute('stroke', getColor( lineColor, lineAlpha ) );
             aTri.setAttribute('stroke-width', Std.string( thickness ) );
             var node: Node = cast aTri;
             graphics.appendChild( node );
