@@ -8,7 +8,8 @@ class Draw {
         surface.redCircleBlueOutline();
         surface.yellowEquilateralTriangleGreenOutline();
         surface.purpleRectangleOrangeOutline();
-        surface.heart();
+        surface.quadraticHeart();
+        surface.cubicHeart();
     }
     public inline static var fillAlpha: Float = 1.;
     public inline static var lineAlpha: Float = 1.;
@@ -40,7 +41,7 @@ class Draw {
         surface.drawRect( 100-30, 300-30, 60, 60 );
         surface.endFill();
     }
-    public inline static function heart( surface: Surface ){
+    public inline static function quadraticHeart( surface: Surface ){
         trace( 'heart quadratic curves' );
         surface.beginFill( 0xC1D208, fillAlpha );
         surface.lineStyle( 5., 0x34DDDD, lineAlpha );
@@ -53,6 +54,24 @@ class Draw {
         surface.quadTo( cx + 25, cy, cx, cy + 30 );
         surface.quadTo( cx - 25, cy, cx - 20, cy + 6 );
         surface.quadTo( cx - 34, cy - 5, cx - 28, cy - 20 );
+        surface.endFill();
+    }
+    public inline static function cubicHeart( surface: Surface ){
+        trace( 'heart cubic curves' );
+        surface.beginFill( 0x29f500 , fillAlpha );
+        surface.lineStyle( 5.,0xf50072 , lineAlpha );
+        var s = 0.5;
+        var cx = 500 - 10;
+        var cy = 100 - 22;
+        surface.moveTo( cx, cy );
+        var cx = cx - 75*s;
+        var cy = cy - 40*s;
+        surface.curveTo( cx+75*s, cy+37*s, cx+70*s, cy+25*s, cx+50*s, cy+25*s );
+        surface.curveTo( cx+20*s, cy+25*s, cx+20*s, cy+62.5*s, cx+20*s, cy+62.5*s );
+        surface.curveTo( cx+20*s, cy+80*s, cx+40*s, cy+102*s, cx+75*s, cy+120*s );
+        surface.curveTo( cx+110*s, cy+102*s, cx+130*s, cy+80*s, cx+130*s, cy+62.5*s );
+        surface.curveTo( cx+130*s, cy+62.5*s, cx+130*s, cy+25*s, cx+100*s, cy+25*s );
+        surface.curveTo( cx+85*s, cy+25*s, cx+75*s, cy+37*s, cx+75*s, cy+40*s );
         surface.endFill();
     }
 }
