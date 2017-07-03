@@ -20,8 +20,8 @@ function circle( surface: Surface ){
 and for svg path data as a string.
 ``` haxe
 function kiwi( surface: Surface ){
-  var surfacePath = new SurfacePath( surface );
-  var p = new SvgPath( surfacePath );
+  var surfaceContext = new SurfaceContext( surface );
+  var p = new SvgPath( surfaceContext );
   surface.beginFill( 0xcccccc, 0.5 );
   surface.lineStyle( 1., 0x666666, lineAlpha );
   p.parse( bird_d, 0, 0 );
