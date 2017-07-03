@@ -2534,6 +2534,15 @@ justDrawing_Surface._quadraticBezier = function(t,startPoint,controlPoint,endPoi
 	var u = 1 - t;
 	return Math.pow(u,2) * startPoint + 2 * u * t * controlPoint + Math.pow(t,2) * endPoint;
 };
+justDrawing_Surface.cubicBezier = function(t,arr) {
+	var u = 1 - t;
+	var u1 = 1 - t;
+	return { x : Math.pow(u,3) * arr[0].x + 3 * Math.pow(u,2) * t * arr[1].x + 3 * u * Math.pow(t,2) * arr[2].x + Math.pow(t,3) * arr[3].x, y : Math.pow(u1,3) * arr[0].y + 3 * Math.pow(u1,2) * t * arr[1].y + 3 * u1 * Math.pow(t,2) * arr[2].y + Math.pow(t,3) * arr[3].y};
+};
+justDrawing_Surface._cubicBezier = function(t,startPoint,controlPoint1,controlPoint2,endPoint) {
+	var u = 1 - t;
+	return Math.pow(u,3) * startPoint + 3 * Math.pow(u,2) * t * controlPoint1 + 3 * u * Math.pow(t,2) * controlPoint2 + Math.pow(t,3) * endPoint;
+};
 justDrawing_Surface.prototype = {
 	clear: function() {
 		var geom;
@@ -2579,6 +2588,37 @@ justDrawing_Surface.prototype = {
 		this.graphics[this.graphics.length] = geom3;
 		this.prevX = x;
 		this.prevY = y;
+	}
+	,curveTo: function(x1,y1,x2,y2,x3,y3) {
+		var p0 = { x : this.prevX, y : this.prevY};
+		var p1 = { x : x1, y : y1};
+		var p2 = { x : x2, y : y2};
+		var p3 = { x : x3, y : y3};
+		var x = p0.x - p1.x;
+		var y = p0.y - p1.y;
+		var x4 = p1.x - p2.x;
+		var y4 = p1.y - p2.y;
+		var x5 = p2.x - p3.x;
+		var y5 = p2.y - p3.y;
+		var approxDistance = Math.sqrt(x * x + y * y) + Math.sqrt(x4 * x4 + y4 * y4) + Math.sqrt(x5 * x5 + y5 * y5);
+		var v;
+		if(approxDistance == 0) {
+			approxDistance = 0.000001;
+		}
+		var step = Math.min(1 / (approxDistance * 0.707),justDrawing_Surface.cubicStep);
+		var t = 0.0;
+		v = { x : Math.pow(1.,3) * p0.x + 3 * Math.pow(1.,2) * 0.0 * p1.x + 3. * Math.pow(0.0,2) * p2.x + Math.pow(0.0,3) * p3.x, y : Math.pow(1.,3) * p0.y + 3 * Math.pow(1.,2) * 0.0 * p1.y + 3. * Math.pow(0.0,2) * p2.y + Math.pow(0.0,3) * p3.y};
+		this.lineTo(v.x,v.y);
+		t = step;
+		while(t < 1) {
+			var u = 1 - t;
+			var u1 = 1 - t;
+			v = { x : Math.pow(u,3) * p0.x + 3 * Math.pow(u,2) * t * p1.x + 3 * u * Math.pow(t,2) * p2.x + Math.pow(t,3) * p3.x, y : Math.pow(u1,3) * p0.y + 3 * Math.pow(u1,2) * t * p1.y + 3 * u1 * Math.pow(t,2) * p2.y + Math.pow(t,3) * p3.y};
+			this.lineTo(v.x,v.y);
+			t += step;
+		}
+		v = { x : Math.pow(0.,3) * p0.x + 3 * Math.pow(0.,2) * p1.x + 0. * Math.pow(1.0,2) * p2.x + Math.pow(1.0,3) * p3.x, y : Math.pow(0.,3) * p0.y + 3 * Math.pow(0.,2) * p1.y + 0. * Math.pow(1.0,2) * p2.y + Math.pow(1.0,3) * p3.y};
+		this.lineTo(v.x,v.y);
 	}
 	,quadTo: function(cx,cy,ax,ay) {
 		var p0 = { x : this.prevX, y : this.prevY};
@@ -40338,7 +40378,7 @@ testjustDrawing_Draw.testing = function(surface) {
 	surface.lineStyle(2.,16753920,1.);
 	surface.drawRect(70,270,60,60);
 	surface.endFill();
-	haxe_Log.trace("heart quadratic curves",{ fileName : "Draw.hx", lineNumber : 45, className : "testjustDrawing.Draw", methodName : "heart"});
+	haxe_Log.trace("heart quadratic curves",{ fileName : "Draw.hx", lineNumber : 45, className : "testjustDrawing.Draw", methodName : "quadraticHeart"});
 	surface.beginFill(12702216,1.);
 	surface.lineStyle(5.,3464669,1.);
 	surface.moveTo(273,280);
@@ -40348,6 +40388,17 @@ testjustDrawing_Draw.testing = function(surface) {
 	surface.quadTo(325,300,300,330);
 	surface.quadTo(275,300,280,306);
 	surface.quadTo(266,295,272,280);
+	surface.endFill();
+	haxe_Log.trace("heart cubic curves",{ fileName : "Draw.hx", lineNumber : 60, className : "testjustDrawing.Draw", methodName : "cubicHeart"});
+	surface.beginFill(2749696,1.);
+	surface.lineStyle(5.,16056434,1.);
+	surface.moveTo(490,78);
+	surface.curveTo(490.,76.5,487.5,70.5,477.5,70.5);
+	surface.curveTo(462.5,70.5,462.5,89.25,462.5,89.25);
+	surface.curveTo(462.5,98.,472.5,109.,490.,118.);
+	surface.curveTo(507.5,109.,517.5,98.,517.5,89.25);
+	surface.curveTo(517.5,89.25,517.5,70.5,502.5,70.5);
+	surface.curveTo(495.,70.5,490.,76.5,490.,78.);
 	surface.endFill();
 };
 testjustDrawing_Draw.whiteBackground = function(surface) {
@@ -40378,8 +40429,8 @@ testjustDrawing_Draw.purpleRectangleOrangeOutline = function(surface) {
 	surface.drawRect(70,270,60,60);
 	surface.endFill();
 };
-testjustDrawing_Draw.heart = function(surface) {
-	haxe_Log.trace("heart quadratic curves",{ fileName : "Draw.hx", lineNumber : 45, className : "testjustDrawing.Draw", methodName : "heart"});
+testjustDrawing_Draw.quadraticHeart = function(surface) {
+	haxe_Log.trace("heart quadratic curves",{ fileName : "Draw.hx", lineNumber : 45, className : "testjustDrawing.Draw", methodName : "quadraticHeart"});
 	surface.beginFill(12702216,1.);
 	surface.lineStyle(5.,3464669,1.);
 	surface.moveTo(273,280);
@@ -40389,6 +40440,19 @@ testjustDrawing_Draw.heart = function(surface) {
 	surface.quadTo(325,300,300,330);
 	surface.quadTo(275,300,280,306);
 	surface.quadTo(266,295,272,280);
+	surface.endFill();
+};
+testjustDrawing_Draw.cubicHeart = function(surface) {
+	haxe_Log.trace("heart cubic curves",{ fileName : "Draw.hx", lineNumber : 60, className : "testjustDrawing.Draw", methodName : "cubicHeart"});
+	surface.beginFill(2749696,1.);
+	surface.lineStyle(5.,16056434,1.);
+	surface.moveTo(490,78);
+	surface.curveTo(490.,76.5,487.5,70.5,477.5,70.5);
+	surface.curveTo(462.5,70.5,462.5,89.25,462.5,89.25);
+	surface.curveTo(462.5,98.,472.5,109.,490.,118.);
+	surface.curveTo(507.5,109.,517.5,98.,517.5,89.25);
+	surface.curveTo(517.5,89.25,517.5,70.5,502.5,70.5);
+	surface.curveTo(495.,70.5,490.,76.5,490.,78.);
 	surface.endFill();
 };
 var testjustDrawing_MainLuxe = function() {
@@ -40451,6 +40515,7 @@ haxe_ds_ObjectMap.count = 0;
 js_Boot.__toStr = ({ }).toString;
 js_html_compat_Float32Array.BYTES_PER_ELEMENT = 4;
 js_html_compat_Uint8Array.BYTES_PER_ELEMENT = 1;
+justDrawing_Surface.cubicStep = 0.03;
 luxe_Debug.debug_batch_tag = "batcher.debug_batcher";
 luxe_Debug.trace_callbacks = [];
 luxe_Debug.shut_down = false;
