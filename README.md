@@ -34,7 +34,7 @@ SVG implementation needs some tweaks it should be changed so that you can fill p
 ### Pixels
 Creates a png file:
 
-![](https://github.com/nanjizal/justDrawing/blob/master/binPixels/neko/out_shapes.png)
+![h](https://github.com/nanjizal/justDrawing/blob/master/binPixels/neko/out_shapes.png)
 
 ### Kha & Heaps
 No plans ?
