@@ -9,14 +9,14 @@ but with aspects of justTriangles, like simple svg path parsing.
 
 
 ### Example use
-```haxe
+``` haxe
 surface.beginFill( 0xff0000, 1. );
 surface.lineStyle( 2., 0x0000ff, 1. );
 surface.drawCircle( 100, 100, 30 );
 surface.endFill();
 ```
 and for svg path data as a string.
-```haxe
+``` haxe
 var surfacePath = new SurfacePath( surface );
 var p = new SvgPath( surfacePath );
 surface.beginFill( 0xcccccc, 0.5 );
