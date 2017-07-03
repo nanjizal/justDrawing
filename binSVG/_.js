@@ -208,6 +208,15 @@ justDrawing_Surface._quadraticBezier = function(t,startPoint,controlPoint,endPoi
 	var u = 1 - t;
 	return Math.pow(u,2) * startPoint + 2 * u * t * controlPoint + Math.pow(t,2) * endPoint;
 };
+justDrawing_Surface.cubicBezier = function(t,arr) {
+	var u = 1 - t;
+	var u1 = 1 - t;
+	return { x : Math.pow(u,3) * arr[0].x + 3 * Math.pow(u,2) * t * arr[1].x + 3 * u * Math.pow(t,2) * arr[2].x + Math.pow(t,3) * arr[3].x, y : Math.pow(u1,3) * arr[0].y + 3 * Math.pow(u1,2) * t * arr[1].y + 3 * u1 * Math.pow(t,2) * arr[2].y + Math.pow(t,3) * arr[3].y};
+};
+justDrawing_Surface._cubicBezier = function(t,startPoint,controlPoint1,controlPoint2,endPoint) {
+	var u = 1 - t;
+	return Math.pow(u,3) * startPoint + 3 * Math.pow(u,2) * t * controlPoint1 + 3 * u * Math.pow(t,2) * controlPoint2 + Math.pow(t,3) * endPoint;
+};
 justDrawing_Surface.prototype = {
 	repaint: function() {
 		var _g = 0;
@@ -225,6 +234,7 @@ justDrawing_Surface.prototype = {
 		this.graphics.removeChild(element);
 	}
 	,clear: function() {
+		this.currPathD = "";
 		while(this.svgShapes.length != 0) this.remove(this.svgShapes.pop());
 	}
 	,lineStyle: function(thick,color,alpha) {
@@ -239,62 +249,112 @@ justDrawing_Surface.prototype = {
 		this.fillColor = color;
 		this.fillAlpha = alpha;
 		this.inFill = true;
+		this.currPathD = "";
+		var svgPath = window.document.createElementNS("http://www.w3.org/2000/svg","path");
+		this.svgShapes.push(svgPath);
 	}
 	,endFill: function() {
 		this.inFill = false;
-	}
-	,moveTo: function(x,y) {
-		this.prevX = x;
-		this.prevY = y;
-	}
-	,lineTo: function(x,y) {
-		var aLine = window.document.createElementNS("http://www.w3.org/2000/svg","line");
-		aLine.setAttribute("x1",Std.string(this.prevX));
-		aLine.setAttribute("y1",Std.string(this.prevY));
-		aLine.setAttribute("x2",x == null ? "null" : "" + x);
-		aLine.setAttribute("y2",y == null ? "null" : "" + y);
-		var col = this.lineColor;
-		var alpha = this.lineAlpha;
+		console.log(" endFill " + this.currPathD);
+		var svgPath = this.svgShapes[this.svgShapes.length - 1];
+		svgPath.setAttribute("d",this.currPathD + "Z");
+		var col = this.fillColor;
+		var alpha = this.fillAlpha;
 		var str;
 		if(alpha != null && alpha != 1.0) {
 			str = "rgba(" + (col >> 16 & 255) + "," + (col >> 8 & 255) + "," + (col & 255) + "," + alpha + ")";
 		} else {
 			str = "#" + StringTools.hex(col,6);
 		}
-		aLine.setAttribute("stroke",str);
-		aLine.setAttribute("stroke-width",Std.string(this.thickness));
-		this.graphics.appendChild(aLine);
-		this.svgShapes.push(aLine);
+		svgPath.setAttribute("fill",str);
+		var col1 = this.lineColor;
+		var alpha1 = this.lineAlpha;
+		var str1;
+		if(alpha1 != null && alpha1 != 1.0) {
+			str1 = "rgba(" + (col1 >> 16 & 255) + "," + (col1 >> 8 & 255) + "," + (col1 & 255) + "," + alpha1 + ")";
+		} else {
+			str1 = "#" + StringTools.hex(col1,6);
+		}
+		svgPath.setAttribute("stroke",str1);
+		svgPath.setAttribute("stroke-width",Std.string(this.thickness));
+		this.graphics.appendChild(svgPath);
+		this.currPathD = "";
+	}
+	,moveTo: function(x,y) {
+		this.prevX = x;
+		this.prevY = y;
+		if(this.inFill) {
+			this.currPathD += "M" + x + "," + y + " ";
+		}
+	}
+	,lineTo: function(x,y) {
+		if(this.inFill) {
+			if(this.inFill) {
+				this.currPathD += "" + "L" + x + "," + y + " ";
+			}
+		} else {
+			var aLine = window.document.createElementNS("http://www.w3.org/2000/svg","line");
+			aLine.setAttribute("x1",Std.string(this.prevX));
+			aLine.setAttribute("y1",Std.string(this.prevY));
+			aLine.setAttribute("x2",x == null ? "null" : "" + x);
+			aLine.setAttribute("y2",y == null ? "null" : "" + y);
+			var col = this.lineColor;
+			var alpha = this.lineAlpha;
+			var str;
+			if(alpha != null && alpha != 1.0) {
+				str = "rgba(" + (col >> 16 & 255) + "," + (col >> 8 & 255) + "," + (col & 255) + "," + alpha + ")";
+			} else {
+				str = "#" + StringTools.hex(col,6);
+			}
+			aLine.setAttribute("stroke",str);
+			aLine.setAttribute("stroke-width",Std.string(this.thickness));
+			this.graphics.appendChild(aLine);
+			this.svgShapes.push(aLine);
+		}
 		this.prevX = x;
 		this.prevY = y;
 	}
+	,curveTo: function(x1,y1,x2,y2,x3,y3) {
+		var quadString = "" + "C" + x1 + "," + y1 + " " + x2 + "," + y2 + " " + x3 + "," + y3;
+		if(this.inFill) {
+			this.currPathD += quadString;
+		} else {
+			var svgPath = window.document.createElementNS("http://www.w3.org/2000/svg","path");
+			svgPath.setAttribute("d",quadString + "Z");
+			var col = this.lineColor;
+			var alpha = this.lineAlpha;
+			var str;
+			if(alpha != null && alpha != 1.0) {
+				str = "rgba(" + (col >> 16 & 255) + "," + (col >> 8 & 255) + "," + (col & 255) + "," + alpha + ")";
+			} else {
+				str = "#" + StringTools.hex(col,6);
+			}
+			svgPath.setAttribute("stroke",str);
+			svgPath.setAttribute("stroke-width",Std.string(this.thickness));
+			this.graphics.appendChild(svgPath);
+			this.svgShapes.push(svgPath);
+		}
+	}
 	,quadTo: function(cx,cy,ax,ay) {
-		var p0 = { x : this.prevX, y : this.prevY};
-		var p1 = { x : cx, y : cy};
-		var p2 = { x : ax, y : ay};
-		var x = p0.x - p1.x;
-		var y = p0.y - p1.y;
-		var x1 = p1.x - p2.x;
-		var y1 = p1.y - p2.y;
-		var approxDistance = Math.sqrt(x * x + y * y) + Math.sqrt(x1 * x1 + y1 * y1);
-		var v;
-		if(approxDistance == 0) {
-			approxDistance = 0.000001;
+		var quadString = "" + "Q" + cx + "," + cy + " " + ax + "," + ay + " ";
+		if(this.inFill) {
+			this.currPathD += quadString;
+		} else {
+			var svgPath = window.document.createElementNS("http://www.w3.org/2000/svg","path");
+			svgPath.setAttribute("d",quadString + "Z");
+			var col = this.lineColor;
+			var alpha = this.lineAlpha;
+			var str;
+			if(alpha != null && alpha != 1.0) {
+				str = "rgba(" + (col >> 16 & 255) + "," + (col >> 8 & 255) + "," + (col & 255) + "," + alpha + ")";
+			} else {
+				str = "#" + StringTools.hex(col,6);
+			}
+			svgPath.setAttribute("stroke",str);
+			svgPath.setAttribute("stroke-width",Std.string(this.thickness));
+			this.graphics.appendChild(svgPath);
+			this.svgShapes.push(svgPath);
 		}
-		var step = Math.min(1 / (approxDistance * 0.707),0.2);
-		var t = 0.0;
-		v = { x : Math.pow(1.,2) * p0.x + 0. * p1.x + Math.pow(0.0,2) * p2.x, y : Math.pow(1.,2) * p0.y + 0. * p1.y + Math.pow(0.0,2) * p2.y};
-		this.lineTo(v.x,v.y);
-		t = step;
-		while(t < 1) {
-			var u = 1 - t;
-			var u1 = 1 - t;
-			v = { x : Math.pow(u,2) * p0.x + 2 * u * t * p1.x + Math.pow(t,2) * p2.x, y : Math.pow(u1,2) * p0.y + 2 * u1 * t * p1.y + Math.pow(t,2) * p2.y};
-			this.lineTo(v.x,v.y);
-			t += step;
-		}
-		v = { x : Math.pow(0.,2) * p0.x + 0. * p1.x + Math.pow(1.0,2) * p2.x, y : Math.pow(0.,2) * p0.y + 0. * p1.y + Math.pow(1.0,2) * p2.y};
-		this.lineTo(v.x,v.y);
 	}
 	,drawCircle: function(cx,cy,radius) {
 		var svgCircle = window.document.createElementNS("http://www.w3.org/2000/svg","circle");
@@ -440,6 +500,17 @@ testjustDrawing_Draw.testing = function(surface) {
 	surface.quadTo(275,300,280,306);
 	surface.quadTo(266,295,272,280);
 	surface.endFill();
+	console.log("heart cubic curves");
+	surface.beginFill(2749696,1.);
+	surface.lineStyle(5.,16056434,1.);
+	surface.moveTo(490,78);
+	surface.curveTo(490.,76.5,487.5,70.5,477.5,70.5);
+	surface.curveTo(462.5,70.5,462.5,89.25,462.5,89.25);
+	surface.curveTo(462.5,98.,472.5,109.,490.,118.);
+	surface.curveTo(507.5,109.,517.5,98.,517.5,89.25);
+	surface.curveTo(517.5,89.25,517.5,70.5,502.5,70.5);
+	surface.curveTo(495.,70.5,490.,76.5,490.,78.);
+	surface.endFill();
 };
 testjustDrawing_Draw.whiteBackground = function(surface) {
 	console.log("draw white background");
@@ -469,7 +540,7 @@ testjustDrawing_Draw.purpleRectangleOrangeOutline = function(surface) {
 	surface.drawRect(70,270,60,60);
 	surface.endFill();
 };
-testjustDrawing_Draw.heart = function(surface) {
+testjustDrawing_Draw.quadraticHeart = function(surface) {
 	console.log("heart quadratic curves");
 	surface.beginFill(12702216,1.);
 	surface.lineStyle(5.,3464669,1.);
@@ -480,6 +551,19 @@ testjustDrawing_Draw.heart = function(surface) {
 	surface.quadTo(325,300,300,330);
 	surface.quadTo(275,300,280,306);
 	surface.quadTo(266,295,272,280);
+	surface.endFill();
+};
+testjustDrawing_Draw.cubicHeart = function(surface) {
+	console.log("heart cubic curves");
+	surface.beginFill(2749696,1.);
+	surface.lineStyle(5.,16056434,1.);
+	surface.moveTo(490,78);
+	surface.curveTo(490.,76.5,487.5,70.5,477.5,70.5);
+	surface.curveTo(462.5,70.5,462.5,89.25,462.5,89.25);
+	surface.curveTo(462.5,98.,472.5,109.,490.,118.);
+	surface.curveTo(507.5,109.,517.5,98.,517.5,89.25);
+	surface.curveTo(517.5,89.25,517.5,70.5,502.5,70.5);
+	surface.curveTo(495.,70.5,490.,76.5,490.,78.);
 	surface.endFill();
 };
 var testjustDrawing_MainSVG = function() {
@@ -507,6 +591,7 @@ String.__name__ = true;
 Array.__name__ = true;
 htmlHelper_svg__$SvgRoot_SvgRoot_$Impl_$.svgNameSpace = "http://www.w3.org/2000/svg";
 justDrawing_Surface.svgNameSpace = "http://www.w3.org/2000/svg";
+justDrawing_Surface.cubicStep = 0.03;
 testjustDrawing_Draw.fillAlpha = 1.;
 testjustDrawing_Draw.lineAlpha = 1.;
 testjustDrawing_MainSVG.main();
