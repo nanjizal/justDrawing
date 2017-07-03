@@ -34,11 +34,27 @@ typedef TargetCanvas = Array<phoenix.geometry.Geometry>;
 typedef PVertex = phoenix.geometry.Vertex;
 #elseif svg
 typedef TargetCanvas = js.html.svg.SVGElement;
+// path commands used when filling
+@:enum
+abstract PathCommand( String ) {
+    var moveTo = 'M'; 
+    var lineTo = 'L';
+    var horizontalLine = 'H'; // not used
+    var verticalLine = 'V';   // not used
+    var curveTo = 'C';        // to do add!!
+    var smoothCurveTo = 'S';  // not used need to calculate reflection of previous control points
+    var quadTo = 'Q';         // quadratic Bézier curve
+    var smoothQuadTo = 'T';   // not used
+    var arcTo = 'A';          // definitely not used!
+    var endPath = 'Z';        // endFill
+}
 #elseif js
 typedef TargetCanvas = js.html.CanvasRenderingContext2D;
 #elseif java
 typedef TargetCanvas = justDrawing.SurfaceJPanel;
 #end
+
+
 
 // Tested against Luxe more thought required on arbitary shapes.
 class Surface {
@@ -161,6 +177,7 @@ class Surface {
             var geom;
             while ((geom = graphics.pop()) != null) geom.drop();
         #elseif svg
+            currPathD = '';
             while( svgShapes.length != 0 ) remove( svgShapes.pop() );
         #elseif js
             graphics.clearRect( 0, 0, width, height );
@@ -183,7 +200,7 @@ class Surface {
         #elseif luxe
             //
         #elseif svg
-            //
+            //if( inFill ) svgShapes[ svgShapes.length - 1 ].setAttribute('stroke', getColor( lineColor, lineAlpha ) );
         #elseif js
             graphics.lineWidth = thick;
             graphics.strokeStyle = getColor( lineColor, lineAlpha );
@@ -192,6 +209,9 @@ class Surface {
             graphics2D.setColor( getColor( lineColor, lineAlpha ) );
         #end
     }
+    #if svg
+    public var currPathD: String;
+    #end
     public function beginFill( color: Int, ?alpha: Float ): Void {
         fillColor = color;
         fillAlpha = alpha;
@@ -206,7 +226,9 @@ class Surface {
         #elseif luxe
             //
         #elseif svg
-            // 
+            currPathD = '';
+            var svgPath: SVGElement = cast Browser.document.createElementNS( svgNameSpace, 'path' );
+            svgShapes.push( svgPath );
         #elseif js
             graphics.fillStyle = getColor( fillColor, fillAlpha );
             graphics.beginPath();
@@ -227,7 +249,15 @@ class Surface {
         #elseif luxe
             //
         #elseif svg
-            //
+            trace(' endFill ' + currPathD );
+            var svgPath = svgShapes[ svgShapes.length - 1 ];
+            svgPath.setAttribute('d', currPathD + PathCommand.endPath );
+            svgPath.setAttribute( "fill", getColor( fillColor, fillAlpha ) );
+            svgPath.setAttribute('stroke', getColor( lineColor, lineAlpha ) );
+            svgPath.setAttribute('stroke-width', Std.string( thickness ) );
+            var node: Node = cast svgPath;
+            graphics.appendChild( node );
+            currPathD = '';
         #elseif js
             graphics.stroke();
             graphics.closePath();
@@ -255,7 +285,7 @@ class Surface {
         #elseif luxe
             //
         #elseif svg
-            //
+            if( inFill ) currPathD += '' + PathCommand.moveTo + x + ',' + y + ' ';
         #elseif js
             graphics.beginPath();
             graphics.moveTo( x, y );
@@ -295,16 +325,20 @@ class Surface {
             prevY = y;
             graphics[ graphics.length ] = geom;
         #elseif svg
-            var aLine: SVGElement = cast Browser.document.createElementNS( svgNameSpace, 'line');
-            aLine.setAttribute('x1', Std.string( prevX ) );
-            aLine.setAttribute('y1', Std.string( prevY ) );
-            aLine.setAttribute('x2', Std.string( x ) );
-            aLine.setAttribute('y2', Std.string( y ) );
-            aLine.setAttribute('stroke', getColor( lineColor, lineAlpha ) );
-            aLine.setAttribute('stroke-width', Std.string( thickness ) );
-            var node: Node = cast aLine;
-            graphics.appendChild( node );
-            svgShapes.push( aLine );
+            if( inFill ){
+                if( inFill ) currPathD += ''+ PathCommand.lineTo + x + ',' + y + ' ';
+            } else {
+                var aLine: SVGElement = cast Browser.document.createElementNS( svgNameSpace, 'line');
+                aLine.setAttribute('x1', Std.string( prevX ) );
+                aLine.setAttribute('y1', Std.string( prevY ) );
+                aLine.setAttribute('x2', Std.string( x ) );
+                aLine.setAttribute('y2', Std.string( y ) );
+                aLine.setAttribute('stroke', getColor( lineColor, lineAlpha ) );
+                aLine.setAttribute('stroke-width', Std.string( thickness ) );
+                var node: Node = cast aLine;
+                graphics.appendChild( node );
+                svgShapes.push( aLine );
+            }
         #elseif js
             graphics.lineTo( x, y );
             graphics.closePath();
@@ -317,24 +351,108 @@ class Surface {
         prevX = x;
         prevY = y;
     }
+    public static var cubicStep: Float = 0.03;
+    public function curveTo( x1: Float, y1: Float, x2: Float, y2: Float, x3: Float, y3: Float ): Void {
+        #if pixel
+            var cubic = new Cubic( graphics, prevX, prevY, x1, y1, x2, y2, x2, y3, thickness );
+            cubic.plot( lineColor, lineAlpha );
+            pixelShapes[ pixelShapes.length ] = ECubic( cubic );
+            prevX = x3;
+            prevY = y3;
+        #elseif flambe
+            var p0 = { x: prevX, y: prevY };
+            var p1 = { x: x1, y: y1 };
+            var p2 = { x: x2, y: y2 };
+            var p3 = { x: x3, y: y3 };
+            var approxDistance = distance( p0, p1 ) + distance( p1, p2 ) + distance( p2, p3 );
+            var v: { x: Float, y: Float };
+            if( approxDistance == 0 ) approxDistance = 0.000001;
+            var step = Math.min( 1/( approxDistance*0.707 ), cubicStep );
+            var arr = [ p0, p1, p2, p3 ];
+            var t = 0.0;
+            v = cubicBezier( 0.0, arr );
+            lineTo( v.x, v.y );
+            t += step;
+            while( t < 1 ){
+                v = cubicBezier( t, arr );
+                lineTo( v.x, v.y );
+                t += step;
+            }
+            v = cubicBezier( 1.0, arr );
+            lineTo( v.x, v.y );
+        #elseif nme
+            var p0 = { x: prevX, y: prevY };
+            var p1 = { x: x1, y: y1 };
+            var p2 = { x: x2, y: y2 };
+            var p3 = { x: x3, y: y3 };
+            var approxDistance = distance( p0, p1 ) + distance( p1, p2 ) + distance( p2, p3 );
+            var v: { x: Float, y: Float };
+            if( approxDistance == 0 ) approxDistance = 0.000001;
+            var step = Math.min( 1/( approxDistance*0.707 ), cubicStep );
+            var arr = [ p0, p1, p2, p3 ];
+            var t = 0.0;
+            v = cubicBezier( 0.0, arr );
+            lineTo( v.x, v.y );
+            t += step;
+            while( t < 1 ){
+                v = cubicBezier( t, arr );
+                lineTo( v.x, v.y );
+                t += step;
+            }
+            v = cubicBezier( 1.0, arr );
+            lineTo( v.x, v.y );
+        #elseif (flash || openfl )
+            graphics.cubicCurveTo( x1, y1, x2, y2, x3, y3 );
+        #elseif luxe
+            var p0 = { x: prevX, y: prevY };
+            var p1 = { x: x1, y: y1 };
+            var p2 = { x: x2, y: y2 };
+            var p3 = { x: x3, y: y3 };
+            var approxDistance = distance( p0, p1 ) + distance( p1, p2 ) + distance( p2, p3 );
+            var v: { x: Float, y: Float };
+            if( approxDistance == 0 ) approxDistance = 0.000001;
+            var step = Math.min( 1/( approxDistance*0.707 ), cubicStep );
+            var arr = [ p0, p1, p2, p3 ];
+            var t = 0.0;
+            v = cubicBezier( 0.0, arr );
+            lineTo( v.x, v.y );
+            t += step;
+            while( t < 1 ){
+                v = cubicBezier( t, arr );
+                lineTo( v.x, v.y );
+                t += step;
+            }
+            v = cubicBezier( 1.0, arr );
+            lineTo( v.x, v.y );
+        #elseif svg
+            var quadString = '' + PathCommand.curveTo +x1+','+ y1+' '+x2+','+y2 +' '+x3+','+y3;
+            if( inFill ){
+                currPathD += quadString;
+            } else {
+                var svgPath: SVGElement = cast Browser.document.createElementNS( svgNameSpace, 'path' );
+                svgPath.setAttribute('d', quadString + PathCommand.endPath );
+                svgPath.setAttribute('stroke', getColor( lineColor, lineAlpha ) );
+                svgPath.setAttribute('stroke-width', Std.string( thickness ) );
+                var node: Node = cast svgPath;
+                graphics.appendChild( node );
+                svgShapes.push( svgPath );
+            }
+        #elseif js
+            graphics.bezierCurveTo( x1, y1, x2, y2, x3, y3 );
+            graphics.stroke();
+        #elseif java
+            path.curveTo( x1, y1, x2, y2, x3, y3 );
+            graphics2D.draw( path );
+        #end
+    }
     public function quadTo( cx: Float, cy: Float, ax: Float, ay: Float ): Void {
         #if pixel
+            // needs research with Quadratic but works.
             var quadratic = new Quadratic( graphics, prevX, prevY, cx, cy, ax, ay, thickness );
             quadratic.plot( lineColor, lineAlpha );
             pixelShapes[ pixelShapes.length ] = EQuadratic( quadratic );
             prevX = ax;
             prevY = ay;
-            /*lineColor = 0xFF0000;
-            lineTo( ax, ay );
-            moveTo( ax, ay );
-            lineColor = 0x0000ff;*/
-            /*lineTo( prevX, prevY );
-            lineTo( cx, cy );
-            lineTo( ax, ay );*/
-            /*var aLine = new Line( graphics, prevX, prevY, ax, ay, thickness );
-        	aLine.plot( lineColor, lineAlpha );
-            pixelShapes[ pixelShapes.length ] = ELine( aLine );*/
-            
         #elseif flambe
             var p0 = { x: prevX, y: prevY };
             var p1 = { x: cx, y: cy };
@@ -380,26 +498,18 @@ class Surface {
             v = quadraticBezier( 1.0, arr );
             lineTo( v.x, v.y );
         #elseif svg
-            var p0 = { x: prevX, y: prevY };
-            var p1 = { x: cx, y: cy };
-            var p2 = { x: ax, y: ay }
-            var approxDistance = distance( p0, p1 ) + distance( p1, p2 );
-            var factor = 2;
-            var v:{x: Float, y:Float };
-            if( approxDistance == 0 ) approxDistance = 0.000001;
-            var step = Math.min( 1/(approxDistance*0.707), 0.2 );
-            var arr = [ p0, p1, p2 ];
-            var t = 0.0;
-            v = quadraticBezier( 0.0, arr );
-            lineTo( v.x, v.y );
-            t += step;
-            while( t < 1 ){
-                v = quadraticBezier( t, arr );
-                lineTo( v.x, v.y );
-                t+=step;
+        var quadString = '' + PathCommand.quadTo +cx+','+ cy+' '+ax+','+ay + ' ';
+            if( inFill ){
+                currPathD += quadString;
+            } else {
+                var svgPath: SVGElement = cast Browser.document.createElementNS( svgNameSpace, 'path' );
+                svgPath.setAttribute('d', quadString + PathCommand.endPath );
+                svgPath.setAttribute('stroke', getColor( lineColor, lineAlpha ) );
+                svgPath.setAttribute('stroke-width', Std.string( thickness ) );
+                var node: Node = cast svgPath;
+                graphics.appendChild( node );
+                svgShapes.push( svgPath );
             }
-            v = quadraticBezier( 1.0, arr );
-            lineTo( v.x, v.y );
         #elseif js
             graphics.quadraticCurveTo( cx, cy, ax, ay );
             graphics.stroke();
@@ -698,5 +808,21 @@ class Surface {
                                                     ): Float {
         var u = 1 - t;
         return Math.pow( u, 2) * startPoint + 2 * u * t * controlPoint + Math.pow( t, 2 ) * endPoint;
+    }
+    public inline static function cubicBezier(   t: Float
+                                        ,   arr: Array<{ x: Float, y: Float }>
+                                        ): { x: Float,y: Float } {
+                                            return {  x: _cubicBezier( t, arr[ 0 ].x, arr[ 1 ].x, arr[ 2 ].x, arr[ 3 ].x )
+                                                    , y: _cubicBezier( t, arr[ 0 ].y, arr[ 1 ].y, arr[ 2 ].y, arr[ 3 ].y ) };
+    }
+    private inline static function _cubicBezier(  t:                Float
+                                                , startPoint:       Float
+                                                , controlPoint1:    Float
+                                                , controlPoint2:    Float
+                                                , endPoint:         Float 
+                                                ): Float {
+                    var u = 1 - t;
+                    return  Math.pow( u, 3 ) * startPoint + 3 * Math.pow( u, 2 ) * t * controlPoint1 +
+                    3* u * Math.pow( t, 2 ) * controlPoint2 + Math.pow( t, 3 ) * endPoint;
     }
 }
