@@ -15,6 +15,15 @@ surface.lineStyle( 2., 0x0000ff, 1. );
 surface.drawCircle( 100, 100, 30 );
 surface.endFill();
 ```
+and for svg path data as a string.
+```haxe
+var surfacePath = new SurfacePath( surface );
+surface.beginFill( 0xcccccc, 0.5 );
+surface.lineStyle( 1., 0x666666, lineAlpha );
+var p = new SvgPath( surfacePath );
+p.parse( bird_d, 0, 0 );
+surface.endFill();
+```
 ## Luxe
 [luxe demo](https://rawgit.com/nanjizal/justDrawing/master/binLuxe/web/index.html)
 
