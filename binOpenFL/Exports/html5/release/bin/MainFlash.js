@@ -5767,6 +5767,15 @@ justDrawing_Surface._quadraticBezier = function(t,startPoint,controlPoint,endPoi
 	var u = 1 - t;
 	return Math.pow(u,2) * startPoint + 2 * u * t * controlPoint + Math.pow(t,2) * endPoint;
 };
+justDrawing_Surface.cubicBezier = function(t,arr) {
+	var u = 1 - t;
+	var u1 = 1 - t;
+	return { x : Math.pow(u,3) * arr[0].x + 3 * Math.pow(u,2) * t * arr[1].x + 3 * u * Math.pow(t,2) * arr[2].x + Math.pow(t,3) * arr[3].x, y : Math.pow(u1,3) * arr[0].y + 3 * Math.pow(u1,2) * t * arr[1].y + 3 * u1 * Math.pow(t,2) * arr[2].y + Math.pow(t,3) * arr[3].y};
+};
+justDrawing_Surface._cubicBezier = function(t,startPoint,controlPoint1,controlPoint2,endPoint) {
+	var u = 1 - t;
+	return Math.pow(u,3) * startPoint + 3 * Math.pow(u,2) * t * controlPoint1 + 3 * u * Math.pow(t,2) * controlPoint2 + Math.pow(t,3) * endPoint;
+};
 justDrawing_Surface.prototype = {
 	prevX: null
 	,prevY: null
@@ -5810,6 +5819,9 @@ justDrawing_Surface.prototype = {
 		this.graphics.lineTo(x,y);
 		this.prevX = x;
 		this.prevY = y;
+	}
+	,curveTo: function(x1,y1,x2,y2,x3,y3) {
+		this.graphics.cubicCurveTo(x1,y1,x2,y2,x3,y3);
 	}
 	,quadTo: function(cx,cy,ax,ay) {
 		this.graphics.curveTo(cx,cy,ax,ay);
@@ -28764,7 +28776,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 651184;
+	this.version = 606664;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = ["lime","utils","AssetCache"];
@@ -66074,27 +66086,27 @@ var testjustDrawing_Draw = function() { };
 $hxClasses["testjustDrawing.Draw"] = testjustDrawing_Draw;
 testjustDrawing_Draw.__name__ = ["testjustDrawing","Draw"];
 testjustDrawing_Draw.testing = function(surface) {
-	haxe_Log.trace("draw white background",{ fileName : "Draw.hx", lineNumber : 16, className : "testjustDrawing.Draw", methodName : "whiteBackground"});
+	haxe_Log.trace("draw white background",{ fileName : "Draw.hx", lineNumber : 17, className : "testjustDrawing.Draw", methodName : "whiteBackground"});
 	surface.beginFill(16777215,1.);
 	surface.lineStyle(2.,16711680,1.);
 	surface.drawRect(1,1,1022,766);
 	surface.endFill();
-	haxe_Log.trace("draw red circle with a blue outline",{ fileName : "Draw.hx", lineNumber : 23, className : "testjustDrawing.Draw", methodName : "redCircleBlueOutline"});
+	haxe_Log.trace("draw red circle with a blue outline",{ fileName : "Draw.hx", lineNumber : 24, className : "testjustDrawing.Draw", methodName : "redCircleBlueOutline"});
 	surface.beginFill(16711680,1.);
 	surface.lineStyle(2.,255,1.);
 	surface.drawCircle(100,100,30);
 	surface.endFill();
-	haxe_Log.trace("draw a yellow equilateral triangle with green outline",{ fileName : "Draw.hx", lineNumber : 30, className : "testjustDrawing.Draw", methodName : "yellowEquilateralTriangleGreenOutline"});
+	haxe_Log.trace("draw a yellow equilateral triangle with green outline",{ fileName : "Draw.hx", lineNumber : 31, className : "testjustDrawing.Draw", methodName : "yellowEquilateralTriangleGreenOutline"});
 	surface.beginFill(16776960,1.);
 	surface.lineStyle(2.,65280,1.);
 	surface.drawEquilaterialTri(300,100,30,-Math.PI / 2);
 	surface.endFill();
-	haxe_Log.trace("draw a purple rectangle with orange outline",{ fileName : "Draw.hx", lineNumber : 37, className : "testjustDrawing.Draw", methodName : "purpleRectangleOrangeOutline"});
+	haxe_Log.trace("draw a purple rectangle with orange outline",{ fileName : "Draw.hx", lineNumber : 38, className : "testjustDrawing.Draw", methodName : "purpleRectangleOrangeOutline"});
 	surface.beginFill(5577355,1.);
 	surface.lineStyle(2.,16753920,1.);
 	surface.drawRect(70,270,60,60);
 	surface.endFill();
-	haxe_Log.trace("heart quadratic curves",{ fileName : "Draw.hx", lineNumber : 44, className : "testjustDrawing.Draw", methodName : "heart"});
+	haxe_Log.trace("heart quadratic curves",{ fileName : "Draw.hx", lineNumber : 45, className : "testjustDrawing.Draw", methodName : "quadraticHeart"});
 	surface.beginFill(12702216,1.);
 	surface.lineStyle(5.,3464669,1.);
 	surface.moveTo(273,280);
@@ -66105,37 +66117,48 @@ testjustDrawing_Draw.testing = function(surface) {
 	surface.quadTo(275,300,280,306);
 	surface.quadTo(266,295,272,280);
 	surface.endFill();
+	haxe_Log.trace("heart cubic curves",{ fileName : "Draw.hx", lineNumber : 60, className : "testjustDrawing.Draw", methodName : "cubicHeart"});
+	surface.beginFill(2749696,1.);
+	surface.lineStyle(5.,16056434,1.);
+	surface.moveTo(490,78);
+	surface.curveTo(490.,76.5,487.5,70.5,477.5,70.5);
+	surface.curveTo(462.5,70.5,462.5,89.25,462.5,89.25);
+	surface.curveTo(462.5,98.,472.5,109.,490.,118.);
+	surface.curveTo(507.5,109.,517.5,98.,517.5,89.25);
+	surface.curveTo(517.5,89.25,517.5,70.5,502.5,70.5);
+	surface.curveTo(495.,70.5,490.,76.5,490.,78.);
+	surface.endFill();
 };
 testjustDrawing_Draw.whiteBackground = function(surface) {
-	haxe_Log.trace("draw white background",{ fileName : "Draw.hx", lineNumber : 16, className : "testjustDrawing.Draw", methodName : "whiteBackground"});
+	haxe_Log.trace("draw white background",{ fileName : "Draw.hx", lineNumber : 17, className : "testjustDrawing.Draw", methodName : "whiteBackground"});
 	surface.beginFill(16777215,1.);
 	surface.lineStyle(2.,16711680,1.);
 	surface.drawRect(1,1,1022,766);
 	surface.endFill();
 };
 testjustDrawing_Draw.redCircleBlueOutline = function(surface) {
-	haxe_Log.trace("draw red circle with a blue outline",{ fileName : "Draw.hx", lineNumber : 23, className : "testjustDrawing.Draw", methodName : "redCircleBlueOutline"});
+	haxe_Log.trace("draw red circle with a blue outline",{ fileName : "Draw.hx", lineNumber : 24, className : "testjustDrawing.Draw", methodName : "redCircleBlueOutline"});
 	surface.beginFill(16711680,1.);
 	surface.lineStyle(2.,255,1.);
 	surface.drawCircle(100,100,30);
 	surface.endFill();
 };
 testjustDrawing_Draw.yellowEquilateralTriangleGreenOutline = function(surface) {
-	haxe_Log.trace("draw a yellow equilateral triangle with green outline",{ fileName : "Draw.hx", lineNumber : 30, className : "testjustDrawing.Draw", methodName : "yellowEquilateralTriangleGreenOutline"});
+	haxe_Log.trace("draw a yellow equilateral triangle with green outline",{ fileName : "Draw.hx", lineNumber : 31, className : "testjustDrawing.Draw", methodName : "yellowEquilateralTriangleGreenOutline"});
 	surface.beginFill(16776960,1.);
 	surface.lineStyle(2.,65280,1.);
 	surface.drawEquilaterialTri(300,100,30,-Math.PI / 2);
 	surface.endFill();
 };
 testjustDrawing_Draw.purpleRectangleOrangeOutline = function(surface) {
-	haxe_Log.trace("draw a purple rectangle with orange outline",{ fileName : "Draw.hx", lineNumber : 37, className : "testjustDrawing.Draw", methodName : "purpleRectangleOrangeOutline"});
+	haxe_Log.trace("draw a purple rectangle with orange outline",{ fileName : "Draw.hx", lineNumber : 38, className : "testjustDrawing.Draw", methodName : "purpleRectangleOrangeOutline"});
 	surface.beginFill(5577355,1.);
 	surface.lineStyle(2.,16753920,1.);
 	surface.drawRect(70,270,60,60);
 	surface.endFill();
 };
-testjustDrawing_Draw.heart = function(surface) {
-	haxe_Log.trace("heart quadratic curves",{ fileName : "Draw.hx", lineNumber : 44, className : "testjustDrawing.Draw", methodName : "heart"});
+testjustDrawing_Draw.quadraticHeart = function(surface) {
+	haxe_Log.trace("heart quadratic curves",{ fileName : "Draw.hx", lineNumber : 45, className : "testjustDrawing.Draw", methodName : "quadraticHeart"});
 	surface.beginFill(12702216,1.);
 	surface.lineStyle(5.,3464669,1.);
 	surface.moveTo(273,280);
@@ -66145,6 +66168,19 @@ testjustDrawing_Draw.heart = function(surface) {
 	surface.quadTo(325,300,300,330);
 	surface.quadTo(275,300,280,306);
 	surface.quadTo(266,295,272,280);
+	surface.endFill();
+};
+testjustDrawing_Draw.cubicHeart = function(surface) {
+	haxe_Log.trace("heart cubic curves",{ fileName : "Draw.hx", lineNumber : 60, className : "testjustDrawing.Draw", methodName : "cubicHeart"});
+	surface.beginFill(2749696,1.);
+	surface.lineStyle(5.,16056434,1.);
+	surface.moveTo(490,78);
+	surface.curveTo(490.,76.5,487.5,70.5,477.5,70.5);
+	surface.curveTo(462.5,70.5,462.5,89.25,462.5,89.25);
+	surface.curveTo(462.5,98.,472.5,109.,490.,118.);
+	surface.curveTo(507.5,109.,517.5,98.,517.5,89.25);
+	surface.curveTo(517.5,89.25,517.5,70.5,502.5,70.5);
+	surface.curveTo(495.,70.5,490.,76.5,490.,78.);
 	surface.endFill();
 };
 function $iterator(o) { if( o instanceof Array ) return function() { return HxOverrides.iter(o); }; return typeof(o.iterator) == 'function' ? $bind(o,o.iterator) : o.iterator; }
@@ -66221,6 +66257,7 @@ js_Boot.__toStr = ({ }).toString;
 js_html_compat_Float32Array.BYTES_PER_ELEMENT = 4;
 js_html_compat_Float64Array.BYTES_PER_ELEMENT = 8;
 js_html_compat_Uint8Array.BYTES_PER_ELEMENT = 1;
+justDrawing_Surface.cubicStep = 0.03;
 lime__$backend_html5_HTML5HTTPRequest.activeRequests = 0;
 lime__$backend_html5_HTML5HTTPRequest.requestLimit = 4;
 lime__$backend_html5_HTML5HTTPRequest.requestQueue = new List();
