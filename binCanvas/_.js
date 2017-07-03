@@ -110,6 +110,15 @@ justDrawing_Surface._quadraticBezier = function(t,startPoint,controlPoint,endPoi
 	var u = 1 - t;
 	return Math.pow(u,2) * startPoint + 2 * u * t * controlPoint + Math.pow(t,2) * endPoint;
 };
+justDrawing_Surface.cubicBezier = function(t,arr) {
+	var u = 1 - t;
+	var u1 = 1 - t;
+	return { x : Math.pow(u,3) * arr[0].x + 3 * Math.pow(u,2) * t * arr[1].x + 3 * u * Math.pow(t,2) * arr[2].x + Math.pow(t,3) * arr[3].x, y : Math.pow(u1,3) * arr[0].y + 3 * Math.pow(u1,2) * t * arr[1].y + 3 * u1 * Math.pow(t,2) * arr[2].y + Math.pow(t,3) * arr[3].y};
+};
+justDrawing_Surface._cubicBezier = function(t,startPoint,controlPoint1,controlPoint2,endPoint) {
+	var u = 1 - t;
+	return Math.pow(u,3) * startPoint + 3 * Math.pow(u,2) * t * controlPoint1 + 3 * u * Math.pow(t,2) * controlPoint2 + Math.pow(t,3) * endPoint;
+};
 justDrawing_Surface.prototype = {
 	clear: function() {
 		this.graphics.clearRect(0,0,this.width,this.height);
@@ -165,6 +174,10 @@ justDrawing_Surface.prototype = {
 		this.graphics.stroke();
 		this.prevX = x;
 		this.prevY = y;
+	}
+	,curveTo: function(x1,y1,x2,y2,x3,y3) {
+		this.graphics.bezierCurveTo(x1,y1,x2,y2,x3,y3);
+		this.graphics.stroke();
 	}
 	,quadTo: function(cx,cy,ax,ay) {
 		this.graphics.quadraticCurveTo(cx,cy,ax,ay);
@@ -248,6 +261,17 @@ testjustDrawing_Draw.testing = function(surface) {
 	surface.quadTo(275,300,280,306);
 	surface.quadTo(266,295,272,280);
 	surface.endFill();
+	console.log("heart cubic curves");
+	surface.beginFill(2749696,1.);
+	surface.lineStyle(5.,16056434,1.);
+	surface.moveTo(490,78);
+	surface.curveTo(490.,76.5,487.5,70.5,477.5,70.5);
+	surface.curveTo(462.5,70.5,462.5,89.25,462.5,89.25);
+	surface.curveTo(462.5,98.,472.5,109.,490.,118.);
+	surface.curveTo(507.5,109.,517.5,98.,517.5,89.25);
+	surface.curveTo(517.5,89.25,517.5,70.5,502.5,70.5);
+	surface.curveTo(495.,70.5,490.,76.5,490.,78.);
+	surface.endFill();
 };
 testjustDrawing_Draw.whiteBackground = function(surface) {
 	console.log("draw white background");
@@ -277,7 +301,7 @@ testjustDrawing_Draw.purpleRectangleOrangeOutline = function(surface) {
 	surface.drawRect(70,270,60,60);
 	surface.endFill();
 };
-testjustDrawing_Draw.heart = function(surface) {
+testjustDrawing_Draw.quadraticHeart = function(surface) {
 	console.log("heart quadratic curves");
 	surface.beginFill(12702216,1.);
 	surface.lineStyle(5.,3464669,1.);
@@ -288,6 +312,19 @@ testjustDrawing_Draw.heart = function(surface) {
 	surface.quadTo(325,300,300,330);
 	surface.quadTo(275,300,280,306);
 	surface.quadTo(266,295,272,280);
+	surface.endFill();
+};
+testjustDrawing_Draw.cubicHeart = function(surface) {
+	console.log("heart cubic curves");
+	surface.beginFill(2749696,1.);
+	surface.lineStyle(5.,16056434,1.);
+	surface.moveTo(490,78);
+	surface.curveTo(490.,76.5,487.5,70.5,477.5,70.5);
+	surface.curveTo(462.5,70.5,462.5,89.25,462.5,89.25);
+	surface.curveTo(462.5,98.,472.5,109.,490.,118.);
+	surface.curveTo(507.5,109.,517.5,98.,517.5,89.25);
+	surface.curveTo(517.5,89.25,517.5,70.5,502.5,70.5);
+	surface.curveTo(495.,70.5,490.,76.5,490.,78.);
 	surface.endFill();
 };
 var testjustDrawing_MainCanvas = function() {
@@ -309,6 +346,7 @@ var testjustDrawing_MainCanvas = function() {
 testjustDrawing_MainCanvas.main = function() {
 	new testjustDrawing_MainCanvas();
 };
+justDrawing_Surface.cubicStep = 0.03;
 testjustDrawing_Draw.fillAlpha = 1.;
 testjustDrawing_Draw.lineAlpha = 1.;
 testjustDrawing_MainCanvas.main();
