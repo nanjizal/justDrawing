@@ -2,7 +2,7 @@ package testjustDrawing;
 import justDrawing.Surface;
 import testjustDrawing.Draw;
 import justDrawing.justPath.SvgPath;
-import justDrawing.justPath.SurfacePath;
+import justDrawing.justPath.SurfaceContext;
 using testjustDrawing.Draw;
 class Draw {
     public static function testing( surface: Surface ){
@@ -78,8 +78,8 @@ class Draw {
         surface.endFill();
     }
     public inline static function drawKiwi( surface: Surface ){
-        var surfacePath = new SurfacePath( surface );
-        var p = new SvgPath( surfacePath );
+        var surfaceContext = new SurfaceContext( surface );
+        var p = new SvgPath( surfaceContext );
         surface.beginFill( 0xcccccc, 0.5 );
         surface.lineStyle( 1., 0x666666, lineAlpha );
         p.parse( bird_d, 0, 0 );
