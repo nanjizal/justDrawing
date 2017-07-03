@@ -1,6 +1,8 @@
 # justDrawing
 Simple very basic drawing api for cross toolkits, WIP, experimental.
-Rework of https://github.com/hxDaedalus/hxDaedalus/tree/master/src/wings
+Rework of https://github.com/hxDaedalus/hxDaedalus/tree/master/src/wings but with aspects of justTriangles, like simple svg path parsing.
+![justdrawingkiwi](https://user-images.githubusercontent.com/20134338/27797254-dca94ef6-6004-11e7-846c-1a6b0e336c3d.png)
+
 
 ### Example use
 ```haxe
