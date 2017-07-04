@@ -354,9 +354,34 @@ class Surface {
     public static var cubicStep: Float = 0.03;
     public function curveTo( x1: Float, y1: Float, x2: Float, y2: Float, x3: Float, y3: Float ): Void {
         #if pixel
+        /*
+            //TODO: Needs fixing instead of below
             var cubic = new Cubic( graphics, prevX, prevY, x1, y1, x2, y2, x2, y3, thickness );
             cubic.plot( lineColor, lineAlpha );
             pixelShapes[ pixelShapes.length ] = ECubic( cubic );
+            prevX = x3;
+            prevY = y3;
+        */
+            var p0 = { x: prevX, y: prevY };
+            var p1 = { x: x1, y: y1 };
+            var p2 = { x: x2, y: y2 };
+            var p3 = { x: x3, y: y3 };
+            var approxDistance = distance( p0, p1 ) + distance( p1, p2 ) + distance( p2, p3 );
+            var v: { x: Float, y: Float };
+            if( approxDistance == 0 ) approxDistance = 0.000001;
+            var step = Math.min( 1/( approxDistance*0.707 ), cubicStep );
+            var arr = [ p0, p1, p2, p3 ];
+            var t = 0.0;
+            v = cubicBezier( 0.0, arr );
+            lineTo( v.x, v.y );
+            t += step;
+            while( t < 1 ){
+                v = cubicBezier( t, arr );
+                lineTo( v.x, v.y );
+                t += step;
+            }
+            v = cubicBezier( 1.0, arr );
+            lineTo( v.x, v.y );
             prevX = x3;
             prevY = y3;
         #elseif flambe
