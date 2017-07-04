@@ -341,7 +341,7 @@ class Surface {
             }
         #elseif js
             graphics.lineTo( x, y );
-            graphics.closePath();
+            //graphics.closePath();
             graphics.stroke();
         #elseif java
             path.lineTo( x, y );
